@@ -7,6 +7,7 @@ Usage: python3 scripts/build_seen_jobs.py POSTINGS_DIR references/seen-jobs.csv
   "Save <title> at <company>" pages.
 - Skips files already listed in the CSV's `file` column, so it is safe to rerun.
 - Keeps any `status` values you typed (applied, skipped, ...).
+- Recomputes the role counts; roles marked skipped are not counted.
 - Prints files it could not parse so you can add them by hand.
 """
 import csv, glob, os, re, sys, collections
@@ -77,16 +78,21 @@ def main(src_dir, csv_path):
             r = dict(company=c, position=t, location=loc, pay=pay, source=src,
                      roles_at_company="", other_roles_at_company="", file=name, status="")
             seen[k] = r; rows.append(r)
-    by = collections.defaultdict(list)
-    for r in rows: by[norm_company(r["company"])].append(r["position"])
+    active = collections.defaultdict(list)
+    companies = set()
     for r in rows:
-        group = by[norm_company(r["company"])]
+        k = norm_company(r["company"])
+        companies.add(k)
+        if r.get("status", "").strip().lower() != "skipped":
+            active[k].append(r["position"])
+    for r in rows:
+        group = active[norm_company(r["company"])]
         r["roles_at_company"] = len(group)
         r["other_roles_at_company"] = " | ".join(t for t in group if t != r["position"])
     rows.sort(key=lambda r: (norm_company(r["company"]), r["position"].lower()))
     with open(csv_path, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=COLS); w.writeheader(); w.writerows(rows)
-    print(f"{len(rows)} jobs, {len(by)} companies")
+    print(f"{len(rows)} jobs, {len(companies)} companies")
     if unparsed:
         print("Could not parse (add by hand):")
         for u in unparsed: print("  ", u)

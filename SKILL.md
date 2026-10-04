@@ -55,12 +55,13 @@ The list of every posting Jay has shared lives in `references/seen-jobs.csv`, ne
 Jay is happy to apply to two roles at one company, but not three or more.
 - If the company already has one other role in the list, add a short ⚠️ heading naming that role, and note that applying to both is fine.
 - If the company already has two or more other roles, add a ⚠️ heading listing them and recommend applying to at most two in total. Say which two fit best, including the new one.
-- Count roles whose status is not skipped.
+- Roles whose status is skipped do not count. The script already leaves them out of `roles_at_company` and `other_roles_at_company`. When you add or edit a row by hand, recount the same way and do not trust a stored number that may be out of date.
 
 ### Keeping the list current
 
 - After triaging a new posting, append one row to the CSV (company, position, location, pay, source, file name, blank status), then update the roles_at_company and other_roles_at_company columns for that company. Skip this step if the posting is already in the list.
 - When Jay says he applied to or skipped a role, set its status.
+- If the reply recommends skipping (a red flag), set the new row's status to skipped. Jay sometimes applies anyway, so when he says he applied, change the status to applied and recount that company's roles.
 - To add many saved posting files at once, run `python3 scripts/build_seen_jobs.py POSTINGS_DIR references/seen-jobs.csv`. The script reads LinkedIn exports and Wellfound lists, skips files already in the CSV, keeps existing status values, recomputes the role counts, and prints the files it could not read. For each file it prints, open the file, find the company, title, and location, and append a row by hand with source Career site.
 
 ## Features line
